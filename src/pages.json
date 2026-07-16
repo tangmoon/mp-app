@@ -1,0 +1,101 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "上海资讯",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/news/news",
+			"style": {
+				"navigationBarTitleText": "资讯",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/news/detail/detail",
+			"style": {
+				"navigationBarTitleText": "详情",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/price/price",
+			"style": {
+				"navigationBarTitleText": "价格",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/price/detail/detail",
+			"style": {
+				"navigationBarTitleText": "详细数据图",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black",
+				"pageOrientation": "landscape"
+			}
+		},
+		{
+			"path": "pages/inquiry/inquiry",
+			"style": {
+				"navigationBarTitleText": "询价",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/info",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": {
+				"navigationBarTitleText": "ai对话助手",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": {
+					  "buttons": [
+						{
+						  "float": "left",
+						  "text": "筛选",
+						  "fontSize": "16px",
+						  "color": "#3c434a"
+						}
+					  ]
+					}
+				  }
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "mywork",
+		"navigationBarBackgroundColor": "#ffffff",
+		"backgroundColor": "#ededed"
+	},
+	"easycom": {
+		"custom": {
+		  "^t-chat-(.*)": "@tdesign/uniapp-chat/chat-$1/chat-$1.vue",
+		  "^t-attachments": "@tdesign/uniapp-chat/attachments/attachments.vue",
+		  "^t-(.*)": "@tdesign/uniapp/$1/$1.vue"
+		}
+	}
+}
