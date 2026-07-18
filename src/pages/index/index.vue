@@ -1,78 +1,57 @@
 <template>
   <view class="page">
-    <!-- 搜索区 -->
-    <view class="search-row">
-      <image class="avatar" :src="icons.avatar" mode="aspectFit" />
-      <view class="search-box">
-        <image class="search-icon" :src="icons.search" mode="aspectFit" />
-        <input class="search-input" placeholder="输入关键字" placeholder-class="search-placeholder" />
-        <text class="divider">|</text>
-        <text class="search-btn">搜索</text>
-      </view>
-      <view class="ai-btn">AI</view>
+    <AppSearchBar />
+
+    <SegmentTabs :tabs="tabs" v-model="activeTab" spread />
+
+    <view v-if="loading" class="page-loading">
+      <text class="page-loading-text">加载中...</text>
     </view>
 
-    <!-- 分类 Tab -->
-    <view class="tabs">
-      <view
-        v-for="(tab, i) in tabs"
-        :key="tab"
-        class="tab-item"
-        @click="activeTab = i"
-      >
-        <text :class="['tab-text', activeTab === i && 'tab-text_active']">{{ tab }}</text>
-        <view :class="['tab-underline', activeTab === i && 'tab-underline_active']" />
-      </view>
-    </view>
-
-    <!-- 轮播 Banner -->
-    <view class="banner-area">
-      <view class="banner-wrap">
-        <swiper
-          class="banner-swiper"
-          :autoplay="true"
-          :interval="4000"
-          :duration="400"
-          circular
-          @change="onBannerChange"
-        >
-          <swiper-item v-for="(b, i) in banners" :key="i">
-            <view class="banner-slide" :style="{ background: b.bg }">
-              <text class="banner-title">{{ b.title }}</text>
+    <!-- 「成交信息」tab：在首页内联展示交易卡片列表（不跳页） -->
+    <template v-else-if="activeTab === 3">
+      <view class="tx-list">
+        <view class="tx-card" v-for="(t, i) in txList" :key="i">
+          <view class="tx-head">
+            <view class="tx-product">
+              <view class="tx-hex">
+                <image class="tx-hex-icon" :src="iconLng" mode="aspectFit" />
+                <text class="tx-hex-text">LNG</text>
+              </view>
+              <view class="tx-meta">
+                <text class="tx-name">{{ t.product }}</text>
+                <text class="tx-date">{{ t.date }}</text>
+              </view>
             </view>
-          </swiper-item>
-        </swiper>
-
-        <view class="banner-dots">
-          <view
-            v-for="(b, i) in banners"
-            :key="i"
-            :class="['dot', currentBanner === i && 'dot_active']"
-          />
-        </view>
-
-        <view class="banner-caption">
-          <text class="banner-caption-text">{{ banners[currentBanner].title }}</text>
+          </view>
+          <view class="tx-stats">
+            <view class="tx-stat">
+              <text class="stat-label">成交量</text>
+              <view class="stat-value-row">
+                <text class="stat-value">{{ t.volume }}</text>
+                <text class="stat-unit">吨</text>
+              </view>
+            </view>
+            <view class="tx-stat">
+              <text class="stat-label">成交单价</text>
+              <view class="stat-value-row">
+                <text class="stat-value stat-value_blue">{{ t.price }}</text>
+                <text class="stat-unit">元/吨</text>
+              </view>
+            </view>
+            <view class="tx-stat">
+              <text class="stat-label">省份</text>
+              <view class="stat-value-row">
+                <text class="stat-value">{{ t.province }}</text>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
+    </template>
 
-      <!-- 上下自动翻滚的公告牌 -->
-      <view class="peek-card">
-        <swiper
-          class="peek-swiper"
-          vertical
-          circular
-          :autoplay="true"
-          :interval="2600"
-          :duration="500"
-        >
-          <swiper-item v-for="(p, i) in peekItems" :key="i" class="peek-swiper-item">
-            <text class="peek-title">{{ p.title }}</text>
-            <text class="peek-date">{{ p.date }}</text>
-          </swiper-item>
-        </swiper>
-      </view>
-    </view>
+    <template v-else>
+    <BannerCarousel :banners="banners" :peek-items="peekItems" />
 
     <!-- 资讯列表 -->
     <view class="news-list">
@@ -135,177 +114,58 @@
       <text class="footer-line">合作单位：山东清能咨询服务有限公司</text>
       <text class="footer-line">联系电话：023-62898061</text>
     </view>
+    </template>
 
-    <!-- 登录提示条 -->
-    <view class="login-banner">
-      <text class="login-text">请点击登录，以便为您提供更好的服务</text>
-      <view class="login-btn" @click="onLogin">点击登录</view>
-    </view>
-
-    <!-- 底部 TabBar -->
-    <view class="tabbar">
-      <view
-        v-for="(t, i) in tabbarItems"
-        :key="t.label"
-        class="tabbar-item"
-        @click="activeTabbar = i"
-      >
-        <image class="tabbar-icon" :src="tabIcon(t.icon, activeTabbar === i)" mode="aspectFit" />
-        <text :class="['tabbar-label', activeTabbar === i && 'tabbar-label_active']">{{ t.label }}</text>
-      </view>
-    </view>
+    <LoginBanner />
+    <AppTabBar :active="0" />
   </view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-
-const ACCENT = '#2E6BFF'
-const GREY = '#9A9DA6'
-
-function svg(markup) {
-  return `data:image/svg+xml,${encodeURIComponent(markup)}`
-}
-
-const icons = {
-  avatar: svg(
-    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
-      `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>` +
-      `<stop offset='0' stop-color='#8A9CFF'/><stop offset='1' stop-color='#5B6BE0'/></linearGradient></defs>` +
-      `<circle cx='24' cy='24' r='24' fill='url(#g)'/>` +
-      `<circle cx='24' cy='19' r='8' fill='#ffffff'/>` +
-      `<path d='M8 42c1-9 8-14 16-14s15 5 16 14z' fill='#ffffff'/>` +
-      `</svg>`
-  ),
-  search: svg(
-    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
-      `<circle cx='21' cy='21' r='13' fill='none' stroke='#B0B3BC' stroke-width='3.4'/>` +
-      `<line x1='30' y1='30' x2='41' y2='41' stroke='#B0B3BC' stroke-width='3.6' stroke-linecap='round'/>` +
-      `</svg>`
-  ),
-  add: svg(
-    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
-      `<circle cx='24' cy='24' r='21' fill='none' stroke='#2E6BFF' stroke-width='3'/>` +
-      `<line x1='24' y1='14' x2='24' y2='34' stroke='#2E6BFF' stroke-width='3.2' stroke-linecap='round'/>` +
-      `<line x1='14' y1='24' x2='34' y2='24' stroke='#2E6BFF' stroke-width='3.2' stroke-linecap='round'/>` +
-      `</svg>`
-  ),
-}
-
-function tabIcon(name, active) {
-  const c = active ? ACCENT : GREY
-  const paths = {
-    home: `<path d='M24 5 L43 22 H37 V43 H28 V29 H20 V43 H11 V22 H5 Z' fill='${c}'/>`,
-    doc: `<path d='M13 4h16l9 9v31H13z' fill='none' stroke='${c}' stroke-width='2.6' stroke-linejoin='round'/>` +
-      `<path d='M29 4v9h9' fill='none' stroke='${c}' stroke-width='2.6' stroke-linejoin='round'/>` +
-      `<line x1='18' y1='25' x2='33' y2='25' stroke='${c}' stroke-width='2.6' stroke-linecap='round'/>` +
-      `<line x1='18' y1='33' x2='33' y2='33' stroke='${c}' stroke-width='2.6' stroke-linecap='round'/>`,
-    exchange: `<path d='M6 17h30M28 9l8 8-8 8' fill='none' stroke='${c}' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/>` +
-      `<path d='M42 31H12M20 23l-8 8 8 8' fill='none' stroke='${c}' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/>`,
-    price: `<circle cx='24' cy='24' r='19' fill='none' stroke='${c}' stroke-width='2.6'/>` +
-      `<text x='24' y='32' font-size='21' text-anchor='middle' fill='${c}' font-family='Arial,sans-serif'>¥</text>`,
-    inquiry: `<rect x='8' y='6' width='23' height='29' rx='2.5' fill='none' stroke='${c}' stroke-width='2.6'/>` +
-      `<line x1='14' y1='15' x2='25' y2='15' stroke='${c}' stroke-width='2.3' stroke-linecap='round'/>` +
-      `<line x1='14' y1='22' x2='25' y2='22' stroke='${c}' stroke-width='2.3' stroke-linecap='round'/>` +
-      `<circle cx='31' cy='33' r='7.5' fill='#ffffff' stroke='${c}' stroke-width='2.6'/>` +
-      `<line x1='36.2' y1='38.2' x2='42' y2='44' stroke='${c}' stroke-width='2.6' stroke-linecap='round'/>`,
-    map: `<path d='M24 4c-8.3 0-15 6.5-15 14.6C9 29 24 45 24 45s15-16 15-26.4C39 10.5 32.3 4 24 4z' fill='none' stroke='${c}' stroke-width='2.6' stroke-linejoin='round'/>` +
-      `<circle cx='24' cy='18.5' r='5.5' fill='none' stroke='${c}' stroke-width='2.6'/>`,
-  }
-  return svg(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>${paths[name]}</svg>`)
-}
+import { ref, computed, onMounted } from 'vue'
+import { icons, svg } from '../../utils/icons'
+import AppSearchBar from '../../components/AppSearchBar.vue'
+import SegmentTabs from '../../components/SegmentTabs.vue'
+import LoginBanner from '../../components/LoginBanner.vue'
+import AppTabBar from '../../components/AppTabBar.vue'
+import BannerCarousel from './components/BannerCarousel.vue'
+import { getHomeBanners, getHomeNewsFeed, getMarketIndices } from '../../api/home'
+import { getTransactions } from '../../api/transaction'
 
 const tabs = ['市场动态', '交易公告', '交易快报', '成交信息']
 const activeTab = ref(0)
+const loading = ref(true)
 
-const banners = [
-  { title: '关于征求国家管网集团创新服务产品意见及建议的公告', bg: '#3B4AA8' },
-  { title: '长江资讯服务全面升级，助力企业高效决策', bg: '#2F5FA8' },
-  { title: '液化天然气行业动态一览', bg: '#4A3E9E' },
-]
-const currentBanner = ref(0)
-function onBannerChange(e) {
-  currentBanner.value = e.detail.current
-}
+const banners = ref([])
+const peekItems = ref([])
+const newsList = ref([])
+const indexRows = ref([])
+const txList = ref([])
 
-const peekItems = [
-  { title: '地缘冲突搅动全球能源上游市场', date: '7/2 15:35' },
-  { title: '国内液化天然气到岸价小幅上涨', date: '7/3 09:12' },
-  { title: '长江资讯上线智能问答助手，服务全面升级', date: '7/4 16:40' },
-]
-
-const TAG_BLUE = '#2E6BFF'
-const TAG_ORANGE = '#FF9F40'
-
-const newsList = [
-  {
-    tag: '交易公告',
-    tagColor: TAG_BLUE,
-    title:
-      '关于开展中国石油化工股份有限公司天然气分公司蒙陕天然气销售中心液化天然气（零散气）竞价交易的公告',
-    date: '2026-07-08',
-  },
-  {
-    tag: '交易快报',
-    tagColor: TAG_BLUE,
-    title: '中晟国金LPG贸易20260708',
-    date: '2026-07-08',
-  },
-  {
-    tag: '资讯报告',
-    tagColor: TAG_ORANGE,
-    title: '全国液化天然气市场日报（20260623）',
-    date: '2026-06-23',
-  },
-  {
-    tag: '天然气价格',
-    tagColor: TAG_ORANGE,
-    title: '川渝液化天然气价格【CYLNG价格】',
-    date: '2026-07-08',
-  },
-  {
-    tag: '交易公告',
-    tagColor: TAG_BLUE,
-    title: '商品化天然气交易中心关于近期市场交易安排的通知',
-    date: '2026-07-07',
-  },
-]
+onMounted(async () => {
+  const [homeBanners, feed, indices, txs] = await Promise.all([
+    getHomeBanners(),
+    getHomeNewsFeed(),
+    getMarketIndices(),
+    getTransactions(),
+  ])
+  banners.value = homeBanners.banners
+  peekItems.value = homeBanners.peekItems
+  newsList.value = feed
+  indexRows.value = indices
+  txList.value = txs
+  loading.value = false
+})
 
 const filteredNews = computed(() => {
-  if (activeTab.value === 0) return newsList
+  if (activeTab.value === 0) return newsList.value
   const tagName = tabs[activeTab.value]
-  return newsList.filter((n) => n.tag === tagName)
+  return newsList.value.filter((n) => n.tag === tagName)
 })
 
 function onMoreTap(n) {
   uni.showToast({ title: `查看：${n.tag}`, icon: 'none' })
 }
-
-function onLogin() {
-  uni.showToast({ title: '前往登录', icon: 'none' })
-}
-
-const RED = '#E4392B'
-const GREEN = '#1B9E5A'
-
-const indexRows = [
-  [
-    { date: '2026-07-08', name: 'CYLNG', value: '5469', change: '+3', pct: '+0.05%', color: RED },
-    { date: '2026-07-08', name: '上期原油', value: '467.20', change: '+27.8', pct: '+6.33%', color: RED },
-    { date: '2026-07-08', name: '美元兑人民币', value: '6.8077', change: '+0.0023', pct: '+0.03%', color: RED },
-    { date: '2026-07-08', name: '欧元兑人民币', value: '7.7688', change: '-0.0142', pct: '-0.18%', color: GREEN },
-    { date: '2026-07-08', name: '人民币兑日元', value: '20.635', change: '+0.082', pct: '+0.40%', color: RED },
-    { date: '2026-07-08', name: '甲醇期货', value: '2456', change: '-12', pct: '-0.49%', color: GREEN },
-  ],
-  [
-    { date: '2026-07-07', name: 'WTI', value: '72.41', change: '+3.86', pct: '+5.63%', color: RED },
-    { date: '2026-07-07', name: 'Brent', value: '74.16', change: '+2.17', pct: '+3.01%', color: RED },
-    { date: '2026-07-07', name: 'JKM', value: '16.175', change: '+0.11', pct: '+0.68%', color: RED },
-    { date: '2026-07-07', name: 'TTF', value: '14.7', change: '-0.025', pct: '-0.17%', color: GREEN },
-    { date: '2026-07-07', name: 'NBP', value: '82.35', change: '-0.62', pct: '-0.75%', color: GREEN },
-    { date: '2026-07-07', name: '华东LNG到岸价', value: '4520', change: '+35', pct: '+0.78%', color: RED },
-  ],
-]
 
 const favoriteTabs = ['LNG液厂自选', '接收站自选']
 const activeFavoriteTab = ref(0)
@@ -314,15 +174,16 @@ function onAddFavorite() {
   uni.showToast({ title: '添加自选', icon: 'none' })
 }
 
-const activeTabbar = ref(0)
-const tabbarItems = [
-  { label: '首页', icon: 'home' },
-  { label: '资讯', icon: 'doc' },
-  { label: '交易', icon: 'exchange' },
-  { label: '价格', icon: 'price' },
-  { label: '询价', icon: 'inquiry' },
-  { label: '地图', icon: 'map' },
-]
+// 蓝色六边形 LNG 图标（与交易信息页同款）
+const iconLng = svg(
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
+    `<defs><linearGradient id='lng' x1='0' y1='0' x2='0' y2='1'>` +
+    `<stop offset='0' stop-color='#6F8BFF'/><stop offset='1' stop-color='#3B5BE0'/></linearGradient></defs>` +
+    `<path d='M24 3 L42 13 L42 35 L24 45 L6 35 L6 13 Z' fill='url(#lng)'/>` +
+    `<path d='M15 22h12M15 26h18M15 30h10' stroke='#ffffff' stroke-width='2' stroke-linecap='round'/>` +
+    `<circle cx='33' cy='22' r='3' fill='#ffffff'/>` +
+    `</svg>`
+)
 </script>
 
 <style scoped>
@@ -332,200 +193,14 @@ const tabbarItems = [
   padding-bottom: 210rpx;
   box-sizing: border-box;
 }
-
-/* 搜索区 */
-.search-row {
+.page-loading {
+  padding-top: 200rpx;
   display: flex;
-  align-items: center;
-  padding: 20rpx 24rpx;
-  gap: 16rpx;
-}
-.avatar {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.search-box {
-  flex: 1;
-  height: 72rpx;
-  background: #f4f5f7;
-  border-radius: 36rpx;
-  display: flex;
-  align-items: center;
-  padding: 0 24rpx;
-  box-sizing: border-box;
-}
-.search-icon {
-  width: 30rpx;
-  height: 30rpx;
-  margin-right: 12rpx;
-  flex-shrink: 0;
-}
-.search-input {
-  flex: 1;
-  font-size: 28rpx;
-  color: #333;
-}
-.search-placeholder {
-  color: #a9acb4;
-}
-.divider {
-  color: #dcdee3;
-  font-size: 26rpx;
-  margin: 0 16rpx;
-}
-.search-btn {
-  color: #6b7078;
-  font-size: 28rpx;
-  flex-shrink: 0;
-}
-.ai-btn {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6f8bff, #2e4fe0);
-  color: #ffffff;
-  font-size: 26rpx;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
-
-/* Tabs */
-.tabs {
-  display: flex;
-  align-items: center;
-  padding: 12rpx 24rpx 24rpx;
-  gap: 48rpx;
-}
-.tab-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.tab-text {
-  font-size: 30rpx;
-  color: #666;
-  font-weight: 400;
-}
-.tab-text_active {
-  color: #1a1a1a;
-  font-weight: 700;
-}
-.tab-underline {
-  margin-top: 12rpx;
-  width: 40rpx;
-  height: 6rpx;
-  border-radius: 3rpx;
-  background: transparent;
-}
-.tab-underline_active {
-  background: #2e6bff;
-}
-
-/* Banner */
-.banner-area {
-  position: relative;
-  padding: 0 24rpx;
-}
-.peek-card {
-  margin-top: 20rpx;
-  height: 76rpx;
-  background: #eef2fb;
-  border-radius: 12rpx;
-  overflow: hidden;
-}
-.peek-swiper {
-  width: 100%;
-  height: 100%;
-}
-.peek-swiper-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  padding: 0 24rpx;
-  box-sizing: border-box;
-}
-.peek-title {
-  font-size: 26rpx;
-  color: #6b7078;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  margin-right: 16rpx;
-}
-.peek-date {
-  font-size: 24rpx;
+.page-loading-text {
+  font-size: 28rpx;
   color: #9a9da6;
-  flex-shrink: 0;
-}
-.banner-wrap {
-  position: relative;
-  border-radius: 16rpx;
-  overflow: hidden;
-}
-.banner-swiper {
-  width: 100%;
-  height: 320rpx;
-}
-.banner-slide {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0 40rpx;
-  box-sizing: border-box;
-}
-.banner-title {
-  color: #ffffff;
-  font-size: 38rpx;
-  font-weight: 700;
-  line-height: 1.6;
-}
-.banner-dots {
-  position: absolute;
-  top: 20rpx;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 10rpx;
-}
-.dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 5rpx;
-  background: rgba(255, 255, 255, 0.5);
-}
-.dot_active {
-  width: 26rpx;
-  background: #ffffff;
-}
-.banner-caption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 68rpx;
-  background: rgba(15, 20, 45, 0.55);
-  display: flex;
-  align-items: center;
-  padding: 0 24rpx;
-  box-sizing: border-box;
-}
-.banner-caption-text {
-  color: #ffffff;
-  font-size: 26rpx;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
 }
 
 /* 资讯列表 */
@@ -680,69 +355,95 @@ const tabbarItems = [
   line-height: 1.9;
 }
 
-/* 登录提示条 */
-.login-banner {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 100rpx;
-  height: 96rpx;
-  background: #eaf1ff;
+/* 成交信息（首页内联展示） */
+.tx-list {
+  margin-top: 20rpx;
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.tx-card {
+  background: #f4f6fa;
+  border-radius: 16rpx;
+  padding: 28rpx 28rpx 32rpx;
+}
+.tx-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24rpx;
-  box-sizing: border-box;
-  z-index: 5;
+  margin-bottom: 24rpx;
 }
-.login-text {
-  font-size: 26rpx;
-  color: #333;
-  flex: 1;
-  margin-right: 16rpx;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tx-product {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
 }
-.login-btn {
+.tx-hex {
+  position: relative;
+  width: 72rpx;
+  height: 72rpx;
   flex-shrink: 0;
-  background: #2e6bff;
-  color: #ffffff;
-  font-size: 26rpx;
-  padding: 12rpx 28rpx;
-  border-radius: 30rpx;
 }
-
-/* TabBar */
-.tabbar {
-  position: fixed;
+.tx-hex-icon {
+  width: 100%;
+  height: 100%;
+}
+.tx-hex-text {
+  position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 100rpx;
-  padding-bottom: env(safe-area-inset-bottom);
-  background: #ffffff;
-  border-top: 1rpx solid #eeeeee;
-  display: flex;
-  z-index: 6;
+  top: 56%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 18rpx;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1rpx;
 }
-.tabbar-item {
-  flex: 1;
+.tx-meta {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+}
+.tx-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.tx-date {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #8a8d94;
+}
+.tx-stats {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.tx-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+.stat-label {
+  font-size: 24rpx;
+  color: #8a8d94;
+}
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
   gap: 6rpx;
 }
-.tabbar-icon {
-  width: 44rpx;
-  height: 44rpx;
+.stat-value {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1a1a1a;
 }
-.tabbar-label {
-  font-size: 20rpx;
-  color: #9a9da6;
-}
-.tabbar-label_active {
+.stat-value_blue {
   color: #2e6bff;
+}
+.stat-unit {
+  font-size: 22rpx;
+  color: #8a8d94;
 }
 </style>
