@@ -60,7 +60,17 @@
 		{
 			"path": "pages/user/info",
 			"style": {
-				"navigationBarTitleText": "",
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#4a54e8",
+				"navigationBarTextStyle": "white",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/transaction/transaction",
+			"style": {
+				"navigationBarTitleText": "交易",
+				"navigationBarBackgroundColor": "#ffffff",
 				"navigationBarTextStyle": "black"
 			}
 		},
@@ -87,7 +97,7 @@
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "mywork",
+		"navigationBarTitleText": "",
 		"navigationBarBackgroundColor": "#ffffff",
 		"backgroundColor": "#ededed"
 	},

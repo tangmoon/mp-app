@@ -23,7 +23,7 @@ function onAvatarTap() {
     uni.navigateTo({ url: '/pages/login/login' })
     return
   }
-  uni.showActionSheet({
+  /*uni.showActionSheet({
     itemList: ['退出登录'],
     success: (res) => {
       if (res.tapIndex === 0) {
@@ -31,7 +31,8 @@ function onAvatarTap() {
         uni.showToast({ title: '已退出登录', icon: 'none' })
       }
     },
-  })
+  })*/
+  uni.navigateTo({ url: '/pages/user/info' })
 }
 
 function onAiChat() {

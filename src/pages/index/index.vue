@@ -109,11 +109,49 @@
       </view>
     </scroll-view>
 
-    <!-- 成交信息 -->
-    <scroll-view v-if="activeTab === 3" class="scroll-body" scroll-y :key="3">
-      <!-- 资讯列表 -->
-      
-    </scroll-view>
+    <!-- 「成交信息」tab：在首页内联展示交易卡片列表（不跳页） -->
+    <template v-else-if="activeTab === 3">
+      <view class="tx-list">
+        <view class="tx-card" v-for="(t, i) in txList" :key="i">
+          <view class="tx-head">
+            <view class="tx-product">
+              <view class="tx-hex">
+                <image class="tx-hex-icon" :src="iconLng" mode="aspectFit" />
+                <text class="tx-hex-text">LNG</text>
+              </view>
+              <view class="tx-meta">
+                <text class="tx-name">{{ t.product }}</text>
+                <text class="tx-date">{{ t.date }}</text>
+              </view>
+            </view>
+          </view>
+          <view class="tx-stats">
+            <view class="tx-stat">
+              <text class="stat-label">成交量</text>
+              <view class="stat-value-row">
+                <text class="stat-value">{{ t.volume }}</text>
+                <text class="stat-unit">吨</text>
+              </view>
+            </view>
+            <view class="tx-stat">
+              <text class="stat-label">成交单价</text>
+              <view class="stat-value-row">
+                <text class="stat-value stat-value_blue">{{ t.price }}</text>
+                <text class="stat-unit">元/吨</text>
+              </view>
+            </view>
+            <view class="tx-stat">
+              <text class="stat-label">省份</text>
+              <view class="stat-value-row">
+                <text class="stat-value">{{ t.province }}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </template>
+
+
 
     <LoginBanner />
     <AppTabBar :active="0" />
@@ -122,13 +160,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { icons } from '../../utils/icons'
+import { icons, svg } from '../../utils/icons'
 import AppSearchBar from '../../components/AppSearchBar.vue'
 import SegmentTabs from '../../components/SegmentTabs.vue'
 import LoginBanner from '../../components/LoginBanner.vue'
 import AppTabBar from '../../components/AppTabBar.vue'
 import BannerCarousel from './components/BannerCarousel.vue'
 import { getHomeBanners, getHomeNewsFeed, getMarketIndices } from '../../api/home'
+import { getTransactions } from '../../api/transaction'
 
 const tabs = ['市场动态', '交易公告', '交易快报', '成交信息']
 const activeTab = ref(0)
@@ -138,13 +177,20 @@ const banners = ref([])
 const peekItems = ref([])
 const newsList = ref([])
 const indexRows = ref([])
+const txList = ref([])
 
 onMounted(async () => {
-  const [homeBanners, feed, indices] = await Promise.all([getHomeBanners(), getHomeNewsFeed(), getMarketIndices()])
+  const [homeBanners, feed, indices, txs] = await Promise.all([
+    getHomeBanners(),
+    getHomeNewsFeed(),
+    getMarketIndices(),
+    getTransactions(),
+  ])
   banners.value = homeBanners.banners
   peekItems.value = homeBanners.peekItems
   newsList.value = feed
   indexRows.value = indices
+  txList.value = txs
   loading.value = false
 })
 
@@ -173,6 +219,17 @@ const activeFavoriteTab = ref(0)
 function onAddFavorite() {
   uni.showToast({ title: '添加自选', icon: 'none' })
 }
+
+// 蓝色六边形 LNG 图标（与交易信息页同款）
+const iconLng = svg(
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
+    `<defs><linearGradient id='lng' x1='0' y1='0' x2='0' y2='1'>` +
+    `<stop offset='0' stop-color='#6F8BFF'/><stop offset='1' stop-color='#3B5BE0'/></linearGradient></defs>` +
+    `<path d='M24 3 L42 13 L42 35 L24 45 L6 35 L6 13 Z' fill='url(#lng)'/>` +
+    `<path d='M15 22h12M15 26h18M15 30h10' stroke='#ffffff' stroke-width='2' stroke-linecap='round'/>` +
+    `<circle cx='33' cy='22' r='3' fill='#ffffff'/>` +
+    `</svg>`
+)
 </script>
 
 <style scoped>
@@ -350,5 +407,98 @@ function onAddFavorite() {
   font-size: 22rpx;
   color: #b7b9c0;
   line-height: 1.9;
+}
+
+
+/* 成交信息（首页内联展示） */
+.tx-list {
+  margin-top: 20rpx;
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.tx-card {
+  background: #f4f6fa;
+  border-radius: 16rpx;
+  padding: 28rpx 28rpx 32rpx;
+}
+.tx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+.tx-product {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.tx-hex {
+  position: relative;
+  width: 72rpx;
+  height: 72rpx;
+  flex-shrink: 0;
+}
+.tx-hex-icon {
+  width: 100%;
+  height: 100%;
+}
+.tx-hex-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 56%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 18rpx;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1rpx;
+}
+.tx-meta {
+  display: flex;
+  flex-direction: column;
+}
+.tx-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.tx-date {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #8a8d94;
+}
+.tx-stats {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.tx-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+.stat-label {
+  font-size: 24rpx;
+  color: #8a8d94;
+}
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+}
+.stat-value {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.stat-value_blue {
+  color: #2e6bff;
+}
+.stat-unit {
+  font-size: 22rpx;
+  color: #8a8d94;
 }
 </style>
