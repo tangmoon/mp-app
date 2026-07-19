@@ -111,6 +111,19 @@
 
     <!-- 「成交信息」tab：在首页内联展示交易卡片列表（不跳页） -->
     <template v-else-if="activeTab === 3">
+      <!-- 「成交信息」专属筛选行（TxFilterBar 自带下拉面板与 scrim） -->
+      <TxFilterBar
+        v-if="activeTab === 3"
+        :product-options="filters.productOptions"
+        :active-product="activeProduct"
+        :province-options="filters.provinceOptions"
+        :active-province="activeProvince"
+        :range-options="filters.rangeOptions"
+        :active-range="activeRange"
+        @update:active-product="activeProduct = $event"
+        @update:active-province="activeProvince = $event"
+        @update:active-range="activeRange = $event"
+      />
       <view class="tx-list">
         <view class="tx-card" v-for="(t, i) in txList" :key="i">
           <view class="tx-head">
@@ -167,7 +180,9 @@ import LoginBanner from '../../components/LoginBanner.vue'
 import AppTabBar from '../../components/AppTabBar.vue'
 import BannerCarousel from './components/BannerCarousel.vue'
 import { getHomeBanners, getHomeNewsFeed, getMarketIndices } from '../../api/home'
-import { getTransactions } from '../../api/transaction'
+
+import TxFilterBar from './components/TxFilterBar.vue'
+import { getTransactionFilters, getTransactions } from '../../api/transaction'
 
 const tabs = ['市场动态', '交易公告', '交易快报', '成交信息']
 const activeTab = ref(0)
@@ -178,20 +193,32 @@ const peekItems = ref([])
 const newsList = ref([])
 const indexRows = ref([])
 const txList = ref([])
+const filters = ref({ productOptions: [], provinceOptions: [], rangeOptions: [] })
+
+  // 筛选状态（仅「成交信息」tab 生效；其他 tab 展示各自的全量数据）
+  const activeProduct = ref(0)
+  const activeProvince = ref(0)
+  const activeRange = ref(1) // 默认「近30天」
 
 onMounted(async () => {
-  const [homeBanners, feed, indices, txs] = await Promise.all([
+  const [homeBanners, feed, indices, txs, f] = await Promise.all([
     getHomeBanners(),
     getHomeNewsFeed(),
     getMarketIndices(),
     getTransactions(),
+    getTransactionFilters(),
   ])
   banners.value = homeBanners.banners
   peekItems.value = homeBanners.peekItems
   newsList.value = feed
   indexRows.value = indices
   txList.value = txs
+  filters.value = f
+
   loading.value = false
+
+
+    
 })
 
 const filteredNews = computed(() => {
@@ -220,6 +247,35 @@ function onAddFavorite() {
   uni.showToast({ title: '添加自选', icon: 'none' })
 }
 
+
+const currentTxList = computed(() => {
+    // tag:--mockapi 成交信息 tab 走筛选；其他 tab 不带筛选 UI，但也基于 txList 简单展示
+    if (activeTab.value !== 3) {
+      // 其他 tab 也按产品 / 省份筛一份简单视图，省得切过去看到原始 mock
+      return applyFilters(txList.value)
+    }
+    return applyFilters(txList.value)
+  })
+  
+  function applyFilters(list) {
+    const product = filters.value.productOptions[activeProduct.value]
+    const province = filters.value.provinceOptions[activeProvince.value]
+    const range = filters.value.rangeOptions[activeRange.value]
+    return list.filter((t) => {
+      if (product && product !== '全部品种' && t.product !== product) return false
+      if (province && province !== '全部省份' && t.province !== province) return false
+      if (range && !withinRange(t.date, range.days)) return false
+      return true
+    })
+  }
+  
+  function withinRange(dateStr, days) {
+    // tag:--mockapi 用今天作为右端；真实接入后端后应该按后端返回的时间窗口判断
+    const end = new Date()
+    const start = new Date(end.getTime() - (days - 1) * 24 * 60 * 60 * 1000)
+    const d = new Date(dateStr)
+    return d >= start && d <= end
+  }
 // 蓝色六边形 LNG 图标（与交易信息页同款）
 const iconLng = svg(
   `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
