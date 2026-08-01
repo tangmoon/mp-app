@@ -93,7 +93,7 @@
       </view>
 
       <!-- LNG 报价：列表 -->
-      <QuoteRows v-else :list="sortedList" @add="onAddQuote" />
+      <QuoteRows v-else :type="activeTab" @add="onAddQuote" />
     </scroll-view>
     </template>
 
@@ -145,16 +145,17 @@ watch(activeIndexIdx, () => {
 const currentIndexData = computed(() => indexData.value[activeIndexIdx.value])
 const currentDataset = computed(() => {
   const d = currentIndexData.value
-  if (d.variant === 'legacy') return null
+  if (!d || d.variant === 'legacy') return null
   const idx = d.periodTabs ? activeIndexPeriod.value : 0
-  return d.datasets[idx]
+  return d.datasets ? d.datasets[idx] : null
 })
 
 const chartUri = computed(() => {
   const d = currentIndexData.value
+  if (!d) return ''
   if (d.variant === 'legacy') return buildAreaChart(d.points, d.xLabelIndexes)
   const ds = currentDataset.value
-  if (!ds || !ds.chart) return ''
+  if (!ds || !ds.chart || !ds.chart.series || !ds.chart.series.length) return ''
   return ds.chart.series.length > 1
     ? buildLineChart(ds.chart.series, ds.chart.xLabelIndexes)
     : buildAreaChart(ds.chart.series[0].points, ds.chart.xLabelIndexes)
@@ -164,6 +165,7 @@ const chartUri = computed(() => {
 // taps against the exact same points used to draw the SVG (see computeChartLayout).
 const chartSeries = computed(() => {
   const d = currentIndexData.value
+  if (!d) return []
   if (d.variant === 'legacy') return [{ color: '#2E6BFF', points: d.points }]
   const ds = currentDataset.value
   if (!ds || !ds.chart) return []
@@ -174,6 +176,7 @@ const chartSeries = computed(() => {
 // matches chart.series 1:1 in this data model (see indexData above).
 const chartSeriesNames = computed(() => {
   const d = currentIndexData.value
+  if (!d) return []
   if (d.variant === 'legacy') return [d.label]
   const ds = currentDataset.value
   if (!ds || !ds.blocks) return []
@@ -182,6 +185,7 @@ const chartSeriesNames = computed(() => {
 
 const chartUnit = computed(() => {
   const d = currentIndexData.value
+  if (!d) return ''
   if (d.variant === 'legacy') return '元/吨'
   const ds = currentDataset.value
   return ds?.blocks?.[0]?.rows?.[0]?.[0]?.unit || ''
@@ -189,10 +193,12 @@ const chartUnit = computed(() => {
 
 const chartTitle = computed(() => {
   const d = currentIndexData.value
+  if (!d) return ''
   return d.variant === 'legacy' ? d.title : currentDataset.value?.title || ''
 })
 const chartDate = computed(() => {
   const d = currentIndexData.value
+  if (!d) return ''
   return d.variant === 'legacy' ? d.date : currentDataset.value?.date || ''
 })
 

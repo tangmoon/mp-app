@@ -1,4 +1,4 @@
-import { mockRequest } from './request'
+import { mockRequest, request } from './request'
 import { COLOR_UP, COLOR_DOWN, COLOR_ACCENT, COLOR_ACCENT_ORANGE } from '../utils/constants'
 
 const RED = COLOR_UP
@@ -502,6 +502,13 @@ export function getPlantQuotes() {
   ])
 }
 
+export function getPlantQuotesPage(options = {}) {
+  //return request({ url: '/api/client/price', method: 'POST', data, ...options })
+  return request({ url: '/api/quote/page', method: 'POST', data: options })
+}
+
+
+// 生成200条模拟数据
 /**
  * LNG接收站报价 tab。
  */

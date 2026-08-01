@@ -78,7 +78,9 @@
     </template>
 
     <!-- 交易公告 -->
-    <scroll-view v-if="activeTab === 1" class="scroll-body" scroll-y :key="1">
+    <scroll-view v-if="activeTab === 1" 
+    
+    class="scroll-body" scroll-y :key="1">
       <!-- 资讯列表 -->
       <view class="news-list">
         <view class="news-item" v-for="(n, i) in filteredNews" :key="i">

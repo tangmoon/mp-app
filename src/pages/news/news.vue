@@ -10,16 +10,24 @@
 
     <template v-else>
     <!-- 信息动态 -->
-    <view v-if="activeTab === 0" class="feed-list">
-      <view class="feed-item" v-for="(n, i) in newsFeed" :key="i" @click="onOpenDetail(n)">
+    <FeedRow v-if="activeTab === 0" />
+    <!-- <view v-if="activeTab === 0" class="feed-list">
+      <d-scroll
+        :total="total"
+        :skip="skip"
+        @fetch="fetchFeed"
+      >
+        <view class="feed-item" v-for="(n, i) in newsFeed" :key="i" @click="onOpenDetail(n)">
         <text class="feed-title">{{ n.title }}</text>
         <text class="feed-summary">{{ n.summary }}</text>
         <text class="feed-date">{{ n.datetime }}</text>
       </view>
-    </view>
-
+      </d-scroll> 
+      
+    </view>-->
+    <ReportRow v-else-if="activeTab === 1" />
     <!-- 资讯报告 -->
-    <view v-else-if="activeTab === 1" class="report-panel">
+    <!-- <view v-else-if="activeTab === 1" class="report-panel">
       <view class="period-row">
         <view
           v-for="(p, i) in periods"
@@ -39,19 +47,13 @@
       </picker>
 
       <view class="report-list">
-        <view class="report-item" v-for="(r, i) in currentReports" :key="i">
-          <text class="report-title">{{ r }}</text>
-        </view>
+      
       </view>
-    </view>
-
+    </view> -->
+ 
     <!-- 行业政策 -->
-    <view v-else class="policy-list">
-      <view class="policy-item" v-for="(p, i) in policyList" :key="i">
-        <text class="policy-title">{{ p.title }}</text>
-        <text class="policy-date">{{ p.date }}</text>
-      </view>
-    </view>
+    <PolicyRow  v-else />
+    
     </template>
 
     <LoginBanner />
@@ -65,6 +67,11 @@ import AppSearchBar from '../../components/AppSearchBar.vue'
 import SegmentTabs from '../../components/SegmentTabs.vue'
 import LoginBanner from '../../components/LoginBanner.vue'
 import AppTabBar from '../../components/AppTabBar.vue'
+
+import FeedRow from './components/FeedRow.vue'
+import ReportRow from './components/ReportRow.vue'
+import PolicyRow from './components/PolicyRow.vue'
+
 import { getNewsFeed, getReportsByPeriod, getPolicyList } from '../../api/news'
 
 const tabs = ['信息动态', '资讯报告', '行业政策']
@@ -75,38 +82,12 @@ const newsFeed = ref([])
 const reportsByPeriod = ref([])
 const policyList = ref([])
 
+
 onMounted(async () => {
-  const [feed, reports, policies] = await Promise.all([getNewsFeed(), getReportsByPeriod(), getPolicyList()])
-  newsFeed.value = feed
-  reportsByPeriod.value = reports
-  policyList.value = policies
+ 
   loading.value = false
 })
 
-const periods = ['日报', '周报', '月报', '年报', '其他']
-const activePeriod = ref(0)
-
-function buildMonthOptions() {
-  const now = new Date()
-  const options = ['全部']
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    options.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
-  }
-  return options
-}
-const monthOptions = buildMonthOptions()
-const selectedMonthIndex = ref(0)
-
-function onMonthChange(e) {
-  selectedMonthIndex.value = Number(e.detail.value)
-}
-
-const currentReports = computed(() => reportsByPeriod.value[activePeriod.value] || [])
-
-function onOpenDetail(n) {
-  uni.navigateTo({ url: `/pages/news/detail/detail?id=${n.id}` })
-}
 </script>
 
 <style scoped>
@@ -129,6 +110,7 @@ function onOpenDetail(n) {
 /* 信息动态 */
 .feed-list {
   padding: 0 24rpx;
+  height: 1500rpx;
 }
 .feed-item {
   display: flex;

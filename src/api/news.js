@@ -1,4 +1,4 @@
-import { mockRequest } from './request'
+import { mockRequest, request } from './request'
 
 /**
  * "信息动态" tab 的资讯流，与新闻详情页共用同一份数据（详情页按 id 查找 + 算下一篇）。
@@ -77,16 +77,25 @@ export function getNewsFeed() {
   return mockRequest(NEWS_ARTICLES.map(({ id, title, summary, datetime }) => ({ id, title, summary, datetime })))
 }
 
+export function getNewsPage(options = {}) {
+  //return request({ url: '/api/client/price', method: 'POST', data, ...options })
+  return request({ url: '/api/news/page', method: 'POST', data: options })
+}
+
+export function getNewsDetail(id) {
+  return request({ url: '/api/news/detail?newId=' + id, method: 'GET'})
+}
+
 /**
  * 新闻详情页：按 id 查找全文，并算出"下一篇"的 id（按列表顺序循环）。
  */
-export function getNewsDetail(id) {
+/*export function getNewsDetail(id) {
   // tag:--mockapi 替换为真实接口，例如：return request({ url: `/news/${id}` })
   const idx = NEWS_ARTICLES.findIndex((n) => n.id === id)
   const article = idx >= 0 ? NEWS_ARTICLES[idx] : NEWS_ARTICLES[0]
   const nextArticle = NEWS_ARTICLES[(Math.max(idx, 0) + 1) % NEWS_ARTICLES.length]
   return mockRequest({ ...article })
-}
+}*/
 
 /**
  * "资讯报告" tab：按周期（日报/周报/月报/年报/其他）分组的报告标题列表。

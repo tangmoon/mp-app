@@ -26,17 +26,24 @@ export function request({ url, method = 'GET', data, header = {} }) {
       data,
       header: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(token ? { 'clientToken': `${token}` } : {}),
         ...header,
       },
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data)
-        } else {
+        } else if (res.statusCode === 401) {
+          // token过期或未登录，跳转到登录页
+          uni.navigateTo({ url: '/pages/login/login' })
+          reject(res)}
+          else {
           reject(res)
         }
       },
-      fail: reject,
+      fail: (err) => {
+        uni.showToast({ title: '网络异常，请稍后重试', icon: 'none' })
+        reject(err)
+      }
     })
   })
 }

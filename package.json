@@ -52,6 +52,7 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-5010420260703001",
     "@dcloudio/uni-mp-xhs": "3.0.0-5010420260703001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-5010420260703001",
+    "@dimple-smile/uni-scroll": "^2.0.18",
     "@tdesign/uniapp": "^0.10.2",
     "@tdesign/uniapp-chat": "^0.2.4",
     "vue": "^3.4.21",

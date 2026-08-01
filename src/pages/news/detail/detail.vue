@@ -7,7 +7,7 @@
     <template v-else>
       <view class="detail-header">
         <text class="detail-title">{{ article.title }}</text>
-        <text class="detail-datetime">{{ article.datetime }}</text>
+        <text class="detail-datetime">{{ article.publishTime }}</text>
       </view>
 
       <view class="detail-content">
@@ -32,7 +32,8 @@ const article = ref(null)
 
 async function loadArticle(id) {
   loading.value = true
-  article.value = await getNewsDetail(id)
+  const res = await getNewsDetail(id)
+  article.value = res.data
   loading.value = false
   if (article.value?.title) {
     uni.setNavigationBarTitle({ title: article.value.title })

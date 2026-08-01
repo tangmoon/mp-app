@@ -18,7 +18,7 @@
 
 <script setup>
 defineProps({
-  options: { type: Array, required: true },
+  options: { type: Array, default: () => [] },
   modelValue: { type: Number, default: 0 },
 })
 defineEmits(['update:modelValue', 'more'])

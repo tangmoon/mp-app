@@ -5,4 +5,13 @@ export default defineConfig({
   plugins: [
     uni(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:18866',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })

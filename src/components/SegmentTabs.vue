@@ -14,7 +14,7 @@
 
 <script setup>
 defineProps({
-  tabs: { type: Array, required: true },
+  tabs: { type: Array, default: () => [] },
   modelValue: { type: Number, default: 0 },
   spread: { type: Boolean, default: false },
   center: { type: Boolean, default: false },
