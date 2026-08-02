@@ -58,9 +58,7 @@
         >
           {{ t }}
         </text>
-        <view>
-          <image class="favorite-add-icon" :src="icons.add" mode="aspectFit" />
-        </view>
+      
       </view>
       <view class="favorite-empty" @click="onAddFavorite">
         <image class="favorite-add-icon" :src="icons.add" mode="aspectFit" />
@@ -78,10 +76,17 @@
     </template>
 
     <!-- 交易公告 -->
-    <scroll-view v-if="activeTab === 1" 
+    <view v-if="activeTab === 1"> 
+      <ArticlesRow :categoryId="activeTab" />
+    </view>
+
+    <view v-if="activeTab === 2"> 
+      <ArticlesRow :categoryId="activeTab" />
+    </view>
+    <!-- <scroll-view v-if="activeTab === 1" 
     
     class="scroll-body" scroll-y :key="1">
-      <!-- 资讯列表 -->
+      
       <view class="news-list">
         <view class="news-item" v-for="(n, i) in filteredNews" :key="i">
           <view class="news-header">
@@ -93,11 +98,11 @@
           </view>
         </view>
       </view>
-    </scroll-view>
+    </scroll-view> -->
 
     <!-- 交易公告 -->
-    <scroll-view v-if="activeTab === 2" class="scroll-body" scroll-y :key="2">
-      <!-- 资讯列表 -->
+    <!-- <scroll-view v-if="activeTab === 2" class="scroll-body" scroll-y :key="2">
+     
       <view class="news-list">
         <view class="news-item" v-for="(n, i) in filteredNews" :key="i">
           <view class="news-header">
@@ -109,7 +114,7 @@
           </view>
         </view>
       </view>
-    </scroll-view>
+    </scroll-view> -->
 
     <!-- 「成交信息」tab：在首页内联展示交易卡片列表（不跳页） -->
     <template v-else-if="activeTab === 3">
@@ -181,6 +186,7 @@ import SegmentTabs from '../../components/SegmentTabs.vue'
 import LoginBanner from '../../components/LoginBanner.vue'
 import AppTabBar from '../../components/AppTabBar.vue'
 import BannerCarousel from './components/BannerCarousel.vue'
+import ArticlesRow from './components/ArticlesRow.vue'
 import { getHomeBanners, getHomeNewsFeed, getMarketIndices } from '../../api/home'
 
 import TxFilterBar from './components/TxFilterBar.vue'
@@ -238,9 +244,6 @@ function toPath(i) {
 
 }
 
-function onOpenDetail(id) {
-  uni.navigateTo({ url: `/pages/news/detail/detail?id=${id}` })
-}
 
 const favoriteTabs = ['LNG液厂自选', '接收站自选']
 const activeFavoriteTab = ref(0)

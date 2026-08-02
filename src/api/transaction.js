@@ -22,8 +22,16 @@ const TRANSACTIONS = [
   { product: '液化天然气', date: '2026-07-06', volume: 70, price: 4760, province: '山西' },
 ]
 
-const PRODUCT_OPTIONS = ['全部品种', ...Array.from(new Set(TRANSACTIONS.map((t) => t.product)))]
-const PROVINCE_OPTIONS = ['全部省份', ...Array.from(new Set(TRANSACTIONS.map((t) => t.province)))]
+const PRODUCT_OPTIONS = ['品种', '液化天然气','管道天然气']
+const PROVINCE_OPTIONS = ['省份', '北京', '天津', '上海', '重庆',
+'港澳台',
+'河北', '山西', '内蒙古',
+'辽宁', '吉林', '黑龙江',
+'江苏', '浙江', '安徽', '福建', '江西', '山东',
+'河南', '湖北', '湖南',
+'广东', '广西', '海南',
+'四川', '贵州', '云南', '西藏',
+'陕西', '甘肃', '青海', '宁夏', '新疆']
 // tag:--mockapi 日期范围改成后端时间窗口接口会更准；这里用近 N 天的快捷区间兜底
 const RANGE_OPTIONS = [
   { key: '7d', label: '近7天', days: 7 },
