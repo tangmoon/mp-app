@@ -83,39 +83,7 @@
     <view v-if="activeTab === 2"> 
       <ArticlesRow :categoryId="activeTab" />
     </view>
-    <!-- <scroll-view v-if="activeTab === 1" 
-    
-    class="scroll-body" scroll-y :key="1">
-      
-      <view class="news-list">
-        <view class="news-item" v-for="(n, i) in filteredNews" :key="i">
-          <view class="news-header">
-            
-            <text class="news-title">{{ n.title }}</text>
-          </view>
-          <view class="news-footer">
-            <text class="news-date">{{ n.date }}</text>
-          </view>
-        </view>
-      </view>
-    </scroll-view> -->
-
-    <!-- 交易公告 -->
-    <!-- <scroll-view v-if="activeTab === 2" class="scroll-body" scroll-y :key="2">
-     
-      <view class="news-list">
-        <view class="news-item" v-for="(n, i) in filteredNews" :key="i">
-          <view class="news-header">
-            <text class="tag" :style="{ background: n.tagColor }">{{ n.tag }}</text>
-            <text class="news-title">{{ n.title }}</text>
-          </view>
-          <view class="news-footer">
-            <text class="news-date">{{ n.date }}</text>
-          </view>
-        </view>
-      </view>
-    </scroll-view> -->
-
+   
     <!-- 「成交信息」tab：在首页内联展示交易卡片列表（不跳页） -->
     <template v-else-if="activeTab === 3">
       <!-- 「成交信息」专属筛选行（TxFilterBar 自带下拉面板与 scrim） -->

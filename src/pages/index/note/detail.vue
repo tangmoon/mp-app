@@ -11,7 +11,7 @@
       </view>
 
       <view class="detail-content">
-        <text class="detail-content-text">{{ article.content }}</text>
+        <rich-text :nodes="article.content"></rich-text>
       </view>
     </template>
 
