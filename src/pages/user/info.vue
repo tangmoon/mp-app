@@ -44,6 +44,7 @@
 <script setup>
 import { svg } from '../../utils/icons'
 import { userStore } from '../../store/user'
+import { logout } from '../../api/auth'
 
 // 默认灰色头像
 const avatarImg = svg(
@@ -101,6 +102,7 @@ function onMenuTap(m) {
 
 function onLogout() {
   userStore.logout()
+  logout();
   uni.showToast({ title: '已退出登录', icon: 'none' })
   setTimeout(() => uni.reLaunch({ url: '/pages/index/index' }), 600)
 }

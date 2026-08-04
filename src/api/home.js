@@ -1,4 +1,4 @@
-import { mockRequest } from './request'
+import { mockRequest , request} from './request'
 import { COLOR_UP, COLOR_DOWN } from '../utils/constants'
 
 /**
@@ -20,6 +20,10 @@ export function getHomeBanners() {
   })
 }
 
+
+export function getHomeNews(){
+  return request({ url: '/api/home/news', method: 'GET'})
+}
 /**
  * 首页资讯列表（市场动态/交易公告/交易快报/成交信息 共用同一份列表，靠 tag 过滤）。
  */

@@ -23,6 +23,7 @@ function restore() {
 restore()
 
 function setSession({ token, userInfo }) {
+  
   state.token = token
   state.userInfo = userInfo
   uni.setStorageSync(STORAGE_KEY, { token, userInfo })

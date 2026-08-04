@@ -1,4 +1,4 @@
-import request, { mockRequest } from './request'
+import { mockRequest ,request} from './request'
 
 /**
  * 获取微信登录凭证（wx.login 的 code），用于后续换取自建后端的登录态。
@@ -39,18 +39,24 @@ export function wxPhoneLogin({ phoneCode, wxCode }) {
 /**
  * 账号密码登录。
  * @param {object} params
- * @param {string} params.username
+ * @param {string} params.phone
  * @param {string} params.password
  * @returns {Promise<{ token: string, userInfo: object }>}
  */
-export function accountLogin({ username, password }) {
+export function accountLogin({ phone, password }) {
   // tag:--mockapi 替换为真实接口，例如：
   // return request({ url: '/auth/login', method: 'POST', data: { username, password } })
-  if (!username || !password) {
+  if (!phone || !password) {
     return Promise.reject(new Error('账号或密码不能为空'))
   }
-  return mockRequest({
+  return request({ url: '/api/login', method: 'POST', data: {phone, password} })
+  /*return mockRequest({
     token: `mock-token-${username}`,
     userInfo: { id: 'u_mock_account', nickname: username, avatar: '', phone: '' },
-  })
+  })*/
+}
+
+
+export function logout(){
+  return request({url: '/api/logout', method: 'GET'})
 }

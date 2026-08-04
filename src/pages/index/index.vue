@@ -13,14 +13,43 @@
 
     <!-- 资讯列表 -->
     <view class="news-list">
-      <view class="news-item" v-for="(n, i) in filteredNews" :key="i">
-        <view class="news-header">
-          <text class="tag" :style="{ background: n.tagColor }">{{ n.tag }}</text>
-          <text class="news-title">{{ n.title }}</text>
+      
+      <view class="news-item">
+        <view class="news-header" @click="onOpenDetail(newsList[0].id)">
+          <text class="tag" style="background: #2E6BFF">交易公告</text>
+          <text class="news-title">{{ newsList[0].title }}</text>
         </view>
         <view class="news-footer">
-          <text class="news-date">{{ n.date }}</text>
-          <text class="news-more" v-if="i < 2" @click="onMoreTap(i)">查看更多 ></text>
+          <text class="news-date">{{ newsList[0].date }}</text>    
+          <text class="news-more" @click="onMoreTap(1)">查看更多 ></text>
+        </view>
+      </view>
+      <view class="news-item">
+        <view class="news-header" @click="onOpenDetail(newsList[1].id)">
+          <text class="tag" style="background: #2E6BFF">交易快报</text>
+          <text class="news-title">{{ newsList[1].title }}</text>
+        </view>
+        <view class="news-footer">
+          <text class="news-date">{{ newsList[1].date }}</text>    
+          <text class="news-more" @click="onMoreTap(2)">查看更多 ></text>
+        </view>
+      </view>
+      <view class="news-item" @click="toNews">
+        <view class="news-header">
+          <text class="tag" style="background: #FF9F40">资讯报告</text>
+          <text class="news-title">{{ newsList[2].title }}</text>
+        </view>
+        <view class="news-footer">
+          <text class="news-date">{{ newsList[2].date }}</text>    
+        </view>
+      </view>
+      <view class="news-item" @click="toPrice">
+        <view class="news-header">
+          <text class="tag" style="background: #FF9F40">天然气价格</text>
+          <text class="news-title">{{ newsList[3].title }}</text>
+        </view>
+        <view class="news-footer">
+          <text class="news-date">{{ newsList[3].date }}</text>    
         </view>
       </view>
     </view>
@@ -155,7 +184,7 @@ import LoginBanner from '../../components/LoginBanner.vue'
 import AppTabBar from '../../components/AppTabBar.vue'
 import BannerCarousel from './components/BannerCarousel.vue'
 import ArticlesRow from './components/ArticlesRow.vue'
-import { getHomeBanners, getHomeNewsFeed, getMarketIndices } from '../../api/home'
+import { getHomeBanners, getHomeNews,getHomeNewsFeed, getMarketIndices } from '../../api/home'
 
 import TxFilterBar from './components/TxFilterBar.vue'
 import { getTransactionFilters, getTransactions } from '../../api/transaction'
@@ -177,16 +206,17 @@ const filters = ref({ productOptions: [], provinceOptions: [], rangeOptions: [] 
   const activeRange = ref(1) // 默认「近30天」
 
 onMounted(async () => {
-  const [homeBanners, feed, indices, txs, f] = await Promise.all([
+  const [homeBanners,news, indices, txs, f] = await Promise.all([
     getHomeBanners(),
-    getHomeNewsFeed(),
+    getHomeNews(),
+    
     getMarketIndices(),
     getTransactions(),
     getTransactionFilters(),
   ])
   banners.value = homeBanners.banners
   peekItems.value = homeBanners.peekItems
-  newsList.value = feed
+  newsList.value = news.data
   indexRows.value = indices
   txList.value = txs
   filters.value = f
@@ -197,21 +227,22 @@ onMounted(async () => {
     
 })
 
-const filteredNews = computed(() => {
-  if (activeTab.value === 0) return newsList.value
-  const tagName = tabs[activeTab.value]
-  return newsList.value.filter((n) => n.tag === tagName)
-})
 
 function onMoreTap(i) {
   //uni.showToast({ title: `查看：${n.tag}`, icon: 'none' })
-  activeTab.value = i + 1
+  activeTab.value = i 
 }
 // 公告跳转
-function toPath(i) {
-
+function onOpenDetail(id) {
+  uni.navigateTo({ url: `/pages/index/note/detail?id=${id}` })
+}
+function toNews(){
+  uni.navigateTo({ url: `/pages/news/news?activeTab=1`})
 }
 
+function toPrice(){
+  uni.navigateTo({ url: `/pages/price/price` })
+}
 
 const favoriteTabs = ['LNG液厂自选', '接收站自选']
 const activeFavoriteTab = ref(0)

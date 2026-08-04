@@ -2,9 +2,9 @@
   <view class="login-page">
     <view class="logo-area">
       <view class="logo-mark">
-        <text class="logo-mark-text">长江</text>
+        <text class="logo-mark-text">上海</text>
       </view>
-      <text class="app-name">长江资讯</text>
+      <text class="app-name">上海资讯</text>
       <text class="app-slogan">LNG · 天然气市场信息服务</text>
     </view>
 
@@ -35,7 +35,7 @@
         <view class="account-form">
           <input
             class="input"
-            v-model="account.username"
+            v-model="account.phone"
             placeholder="请输入账号"
             placeholder-class="input-placeholder"
           />
@@ -65,10 +65,13 @@ import { userStore } from '../../store/user'
 
 const mode = ref('entry') // 'entry' | 'account'
 const loading = ref(false)
-const account = reactive({ username: '', password: '' })
+const account = reactive({ phone: '', password: '' })
 
 function finishLogin(session) {
-  userStore.setSession(session)
+  
+  const token = session.clientToken;
+  console.log("token:" + JSON.stringify(session, null, 2))
+  userStore.setSession({ token, userInfo: session })
   uni.showToast({ title: '登录成功', icon: 'success' })
   setTimeout(() => {
     const pages = getCurrentPages()
@@ -99,8 +102,10 @@ async function loginWithPhoneCode(phoneCode) {
     // tag:--mockapi wxCode 目前只在 wxPhoneLogin 里拼进假数据，真实接入后端时才会真正用到
     const wxCode = await getWxLoginCode()
     const session = await wxPhoneLogin({ phoneCode, wxCode })
-    finishLogin(session)
+    const userInfo = session.data;
+    finishLogin(userInfo)
   } catch (err) {
+    console.log(err)
     uni.showToast({ title: '登录失败，请重试', icon: 'none' })
   } finally {
     loading.value = false
@@ -109,15 +114,18 @@ async function loginWithPhoneCode(phoneCode) {
 
 async function onAccountLogin() {
   if (loading.value) return
-  if (!account.username || !account.password) {
+  if (!account.phone || !account.password) {
     uni.showToast({ title: '请输入账号和密码', icon: 'none' })
     return
   }
   loading.value = true
   try {
-    const session = await accountLogin({ username: account.username, password: account.password })
-    finishLogin(session)
+    const session = await accountLogin({ phone: account.phone, password: account.password })
+    const userInfo = session.data;
+    console.log('userId:' + userInfo.clientToken)
+    finishLogin(userInfo)
   } catch (err) {
+    console.log(err)
     uni.showToast({ title: '登录失败，请检查账号密码', icon: 'none' })
   } finally {
     loading.value = false
