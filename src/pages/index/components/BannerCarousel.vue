@@ -9,15 +9,17 @@
         circular
         @change="onBannerChange"
       >
-        <swiper-item v-for="(b, i) in banners" :key="i">
-          <view class="banner-slide" :style="{ background: b.bg }">
+        <swiper-item v-for="(b, i) in banners" :key="i" @click="onOpenDetail(b.id)">
+          <view class="banner-slide" style="background:#3B4AA8">
             <text class="banner-title">{{ b.title }}</text>
           </view>
         </swiper-item>
       </swiper>
 
       <view class="banner-dots">
-        <view v-for="(b, i) in banners" :key="i" :class="['dot', currentBanner === i && 'dot_active']" />
+        <view v-for="(b, i) in banners" 
+        :key="i" 
+        :class="['dot', currentBanner === i && 'dot_active']" />
       </view>
 
       <view class="banner-caption">
@@ -28,7 +30,7 @@
     <!-- 上下自动翻滚的公告牌 -->
     <view class="peek-card">
       <swiper class="peek-swiper" vertical circular :autoplay="true" :interval="2600" :duration="500">
-        <swiper-item v-for="(p, i) in peekItems" :key="i" class="peek-swiper-item">
+        <swiper-item v-for="(p, i) in peekItems" :key="i"  @click="onOpenDetail(p.id)" class="peek-swiper-item">
           <text class="peek-title">{{ p.title }}</text>
           <text class="peek-date">{{ p.date }}</text>
         </swiper-item>
@@ -48,6 +50,11 @@ defineProps({
 const currentBanner = ref(0)
 function onBannerChange(e) {
   currentBanner.value = e.detail.current
+}
+
+// 公告跳转
+function onOpenDetail(id) {
+  uni.navigateTo({ url: `/pages/index/note/detail?id=${id}` })
 }
 </script>
 

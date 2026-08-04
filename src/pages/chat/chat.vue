@@ -60,18 +60,83 @@ const getUniqueKey = () => {
     return `key-${uniqueId}`;
 };
 
-const mockData1 =
-    '🌼宝子们，春天来啦，这些户外郊游打卡地你必须知道👏\n\n🌟郊野公园\n这里有大片的草地和各种花卉，随便一拍都是大片既视感📷。还能放风筝、野餐，享受惬意的春日时光。\n\n🌳植物园\n各种珍稀植物汇聚于此，仿佛置身于绿色的海洋。漫步其中，感受大自然的神奇与美丽。\n\n💧湖边湿地\n湖水清澈，周围生态环境优越。能看到很多候鸟和水生植物，是亲近自然的好去处。\n\n宝子们，赶紧收拾行囊，去这些地方打卡吧😜。\n\n#春天郊游 #打卡目的地 #户外之旅 #春日美景';
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const fetchStream = async (str, options) => {
-    const { success, complete, delay = 100 } = options;
-    const arr = str.split('');
-    for (let i = 0; i < arr.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await sleep(delay);
-        success(arr[i]);
+const fetchStream = async (message, history, options) => {
+    const { success, complete, error: onError } = options;
+    const token = uni.getStorageSync('auth')?.token || '';
+
+    try {
+        const response = await fetch('/api/ai/chat/stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { clientToken: token } : {}),
+            },
+            body: JSON.stringify({ message, history }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        console.log('Response content-type:', contentType);
+
+        if (contentType.includes('text/event-stream')) {
+            // SSE 格式
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                // 支持 \n 和 \r\n 换行
+                const lines = buffer.split(/\r?\n/);
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed || trimmed.startsWith(':')) continue;
+
+                    // 兼容 "data: " 和 "data:"
+                    const dataMatch = trimmed.match(/^data:\s?(.*)$/);
+                    if (!dataMatch) continue;
+
+                    const payload = dataMatch[1];
+                    if (payload === '[DONE]') continue;
+
+                    console.log('SSE chunk:', payload);
+                    try {
+                        const parsed = JSON.parse(payload);
+                        // 兼容多种字段名
+                        const text = parsed.content || parsed.text || parsed.message || parsed.delta || '';
+                        if (text) success(text);
+                    } catch {
+                        // 非 JSON，直接作为文本
+                        if (payload) success(payload);
+                    }
+                }
+            }
+        } else {
+            // 非 SSE，直接读取完整响应
+            const text = await response.text();
+            console.log('Non-SSE response:', text);
+            try {
+                const parsed = JSON.parse(text);
+                const content = parsed.content || parsed.text || parsed.message || parsed.data || text;
+                success(content);
+            } catch {
+                success(text);
+            }
+        }
+        complete();
+    } catch (err) {
+        console.error('fetchStream error:', err);
+        onError && onError(err);
+        complete();
     }
-    complete();
 };
 export default {
     components: {
@@ -273,8 +338,20 @@ export default {
         },
 
         // 模拟助手回复
-        simulateAssistantReply() {
+        simulateAssistantReply(userMessage) {
             this.loading = true;
+
+            // 构建历史消息（排除欢迎语，按时间顺序排列）
+            const history = [];
+            const reversed = [...this.chatList].reverse();
+            for (const item of reversed) {
+                if (item.message.role === 'user') {
+                    history.push({ role: 'user', content: item.message.content[0]?.data || '' });
+                } else if (item.message.role === 'assistant' && item.message.status === 'complete') {
+                    history.push({ role: 'assistant', content: item.message.content[0]?.data || '' });
+                }
+            }
+
             const assistantMessage = {
                 avatar: 'https://tdesign.gtimg.com/site/chat-avatar.png',
                 key: getUniqueKey(),
@@ -291,14 +368,17 @@ export default {
             this.chatList = [assistantMessage, ...this.chatList];
             const that = this;
             this.$nextTick(() => {
-                fetchStream(mockData1, {
+                fetchStream(userMessage, history, {
                     success(result) {
-                        if (!that.loading) {
-                            return;
-                        }
+                        if (!that.loading) return;
                         that.chatList[0].message.content[0].data += result;
                     },
                     complete() {
+                        that.chatList[0].message.status = 'complete';
+                        that.loading = false;
+                    },
+                    error() {
+                        that.chatList[0].message.content[0].data = '请求失败，请重试';
                         that.chatList[0].message.status = 'complete';
                         that.loading = false;
                     },

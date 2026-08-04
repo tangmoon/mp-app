@@ -6,7 +6,7 @@ import { COLOR_UP, COLOR_DOWN } from '../utils/constants'
  */
 export function getHomeBanners() {
   // tag:--mockapi 替换为真实接口，例如：return request({ url: '/home/banners' })
-  return mockRequest({
+  /*return mockRequest({
     banners: [
       { title: '关于征求国家管网集团创新服务产品意见及建议的公告', bg: '#3B4AA8' },
       { title: '长江资讯服务全面升级，助力企业高效决策', bg: '#2F5FA8' },
@@ -17,7 +17,8 @@ export function getHomeBanners() {
       { title: '国内液化天然气到岸价小幅上涨', date: '7/3 09:12' },
       { title: '长江资讯上线智能问答助手，服务全面升级', date: '7/4 16:40' },
     ],
-  })
+  })*/
+  return request({ url: '/api/home/banner', method: 'GET'})
 }
 
 

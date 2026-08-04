@@ -122,7 +122,7 @@ async function onAccountLogin() {
   try {
     const session = await accountLogin({ phone: account.phone, password: account.password })
     const userInfo = session.data;
-    console.log('userId:' + userInfo.clientToken)
+  
     finishLogin(userInfo)
   } catch (err) {
     console.log(err)

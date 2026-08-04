@@ -184,7 +184,7 @@ import LoginBanner from '../../components/LoginBanner.vue'
 import AppTabBar from '../../components/AppTabBar.vue'
 import BannerCarousel from './components/BannerCarousel.vue'
 import ArticlesRow from './components/ArticlesRow.vue'
-import { getHomeBanners, getHomeNews,getHomeNewsFeed, getMarketIndices } from '../../api/home'
+import { getHomeBanners, getHomeNews, getMarketIndices } from '../../api/home'
 
 import TxFilterBar from './components/TxFilterBar.vue'
 import { getTransactionFilters, getTransactions } from '../../api/transaction'
@@ -214,8 +214,8 @@ onMounted(async () => {
     getTransactions(),
     getTransactionFilters(),
   ])
-  banners.value = homeBanners.banners
-  peekItems.value = homeBanners.peekItems
+  banners.value = homeBanners.data.banners
+  peekItems.value = homeBanners.data.peekItems
   newsList.value = news.data
   indexRows.value = indices
   txList.value = txs
